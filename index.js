@@ -7,7 +7,7 @@ const crawler = new PlaywrightCrawler({
   requestHandler: router,
 
   // Let's limit our crawls to make our tests shorter and safer.
-  maxRequestsPerCrawl: 20
+  maxRequestsPerCrawl: 10
 })
 
 // Add first URL to the queue and start the crawl.
@@ -15,5 +15,5 @@ await crawler.run([
   'https://www.nachrichtenleicht.de/nachrichtenleicht-nachrichten-100.html',
   'https://www.nachrichtenleicht.de/nachrichtenleicht-kultur-index-100.html',
   'https://www.nachrichtenleicht.de/nachrichtenleicht-vermischtes-100.html',
-  'https://www.nachrichtenleicht.de/nachrichtenleicht-sport-100.html'
+  // 'https://www.nachrichtenleicht.de/nachrichtenleicht-sport-100.html'
 ])
