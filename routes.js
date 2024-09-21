@@ -1,4 +1,4 @@
-import { createPlaywrightRouter, Dataset } from 'crawlee'
+import { createPlaywrightRouter, Dataset} from 'crawlee'
 
 export const router = createPlaywrightRouter()
 
@@ -18,6 +18,8 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
   ).join('\n')
 
   const fullText = [title, description, detail].join('\n')
+
+  const audioUrl = await page.locator('a[alt="Audio herunterladen"]').getAttribute('href')
 
   const wordsBookList = await page.locator('ul.b-list-teaser-word li').all()
   const words = wordsBookList.map(async item => {
@@ -42,16 +44,14 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
     description,
     detail,
     wordsBook,
-    fullText
+    fullText,
+    audioUrl
   }
   await Dataset.pushData(result)
 
   // Extract links from the current page
   // and add them to the crawling queue.
-  await enqueueLinks({
-    selector: 'article.b-teaser-wide > a',
-    label: 'news'
-  })
+
 })
 
 router.addDefaultHandler(async ({ request, page, enqueueLinks, log }) => {

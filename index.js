@@ -1,4 +1,4 @@
-import { PlaywrightCrawler } from 'crawlee'
+import { PlaywrightCrawler} from 'crawlee'
 import { router } from './routes.js'
 
 // PlaywrightCrawler crawls the web using a headless
