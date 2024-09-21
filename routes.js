@@ -17,6 +17,8 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
       .allTextContents()
   ).join('\n')
 
+  const fullText = [title, description, detail].join('\n')
+
   const wordsBookList = await page.locator('ul.b-list-teaser-word li').all()
   const words = wordsBookList.map(async item => {
     const wordTitle = await item.locator('.teaser-word-title').textContent()
@@ -31,15 +33,18 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
     if (result.status === 'fulfilled') return result.value
   })
 
-  log.info(`Title of ${request.loadedUrl} is '${title}'`)
-  log.info(`description of ${request.loadedUrl} is '${description}'`)
-  log.info(`detail of ${request.loadedUrl} is '${detail}'`)
-  log.info(
-    `wordbook of ${request.loadedUrl} is '${wordsBook.flat().join(' ')}'`
-  )
+  log.info(`Article in ${request.loadedUrl} is '${fullText}'`)
 
   // Save results as JSON to ./storage/datasets/default
-  await Dataset.pushData({ title, url: request.loadedUrl })
+  const result = {
+    title,
+    url: request.loadedUrl,
+    description,
+    detail,
+    wordsBook,
+    fullText
+  }
+  await Dataset.pushData(result)
 
   // Extract links from the current page
   // and add them to the crawling queue.
