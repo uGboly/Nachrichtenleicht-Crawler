@@ -1,0 +1,16 @@
+{
+  "name": "nachrichtenleicht_crawler",
+  "version": "1.0.0",
+  "description": "Web Crawler for nachrichtenleicht.de",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "crawlee": "^3.11.3",
+    "playwright": "^1.47.2"
+  }
+}
