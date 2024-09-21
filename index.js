@@ -7,7 +7,7 @@ const crawler = new PlaywrightCrawler({
   requestHandler: router,
 
   // Let's limit our crawls to make our tests shorter and safer.
-  maxRequestsPerCrawl: 10
+  maxRequestsPerCrawl: 100000
 })
 
 // Add first URL to the queue and start the crawl.

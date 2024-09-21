@@ -1,8 +1,8 @@
-import { createPlaywrightRouter, Dataset} from 'crawlee'
+import { createPlaywrightRouter, Dataset } from 'crawlee'
 
 export const router = createPlaywrightRouter()
 
-router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
+router.addHandler('news', async ({ request, page, log }) => {
   const title = await page
     .locator('h1.b-article-header-main span.headline-title')
     .textContent()
@@ -19,7 +19,9 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
 
   const fullText = [title, description, detail].join('\n')
 
-  const audioUrl = await page.locator('a[alt="Audio herunterladen"]').getAttribute('href')
+  const audioUrl = await page
+    .locator('a[alt="Audio herunterladen"]')
+    .getAttribute('href')
 
   const wordsBookList = await page.locator('ul.b-list-teaser-word li').all()
   const words = wordsBookList.map(async item => {
@@ -35,7 +37,7 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
     if (result.status === 'fulfilled') return result.value
   })
 
-  log.info(`Article in ${request.loadedUrl} is '${fullText}'`)
+  //   log.info(`Article in ${request.loadedUrl} is '${fullText}'`)
 
   // Save results as JSON to ./storage/datasets/default
   const result = {
@@ -48,17 +50,22 @@ router.addHandler('news', async ({ request, page, enqueueLinks, log }) => {
     audioUrl
   }
   await Dataset.pushData(result)
-
-  // Extract links from the current page
-  // and add them to the crawling queue.
-
 })
 
 router.addDefaultHandler(async ({ request, page, enqueueLinks, log }) => {
+  for (let i = 0; i < 10; i++) {
+    const newsCount = await page.locator('article.b-teaser-wide').count()
+    log.info('There are ' + newsCount + ' news items')
+    await page.locator('button.js-load-more-button').click()
+    await page.waitForSelector(
+      `article.b-teaser-wide:nth-of-type(${newsCount + 2})`
+    )
+  }
+
   // Extract links from the current page
   // and add them to the crawling queue.
   await enqueueLinks({
-    selector: 'article.b-teaser-wide > a',
+    selector: '.js-load-more-content-wrapper article > a',
     label: 'news'
   })
 })
