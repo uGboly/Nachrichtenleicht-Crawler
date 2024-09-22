@@ -6,6 +6,9 @@ import fse from 'fs-extra'
 const inputDir = './storage/datasets/default'
 const outputDir = './output'
 
+const maxRetries = 3
+const retryDelay = 2000
+
 fse.ensureDirSync(outputDir)
 
 fs.readdir(inputDir, (err, files) => {
@@ -44,7 +47,7 @@ fs.readdir(inputDir, (err, files) => {
             subFolderPath,
             path.basename(audioUrl)
           )
-          downloadAudio(audioUrl, audioFilePath)
+          downloadAudioWithRetries(audioUrl, audioFilePath, maxRetries)
         } catch (err) {
           console.error(`Fail to parse ${file}:`, err)
         }
@@ -53,25 +56,43 @@ fs.readdir(inputDir, (err, files) => {
   })
 })
 
+async function downloadAudioWithRetries (url, filePath, retries) {
+  try {
+    await downloadAudio(url, filePath)
+  } catch (err) {
+    if (retries > 0) {
+      console.warn(
+        `Download failed, retrying... Remaining retries: ${retries}, Error: ${err.message}`
+      )
+
+      setTimeout(() => {
+        downloadAudioWithRetries(url, filePath, retries - 1)
+      }, retryDelay)
+    } else {
+      console.error(
+        `Failed to download audio file: ${url}, Error: ${err.message}`
+      )
+    }
+  }
+}
+
 async function downloadAudio (url, filePath) {
   try {
     const response = await axios({
       url,
       method: 'GET',
-      responseType: 'stream'
+      responseType: 'stream',
+      timeout: 10000
     })
 
     const writer = fs.createWriteStream(filePath)
     response.data.pipe(writer)
 
-    writer.on('finish', () => {
-      console.log(`Audio file downloaded: ${filePath}`)
-    })
-
-    writer.on('error', err => {
-      console.error(`Fail to downloaded: ${url}`, err)
+    return new Promise((resolve, reject) => {
+      writer.on('finish', resolve)
+      writer.on('error', reject)
     })
   } catch (err) {
-    console.error(`Unable to downloaded ${url}:`, err)
+    throw new Error(`Failed to download audio file ${url}: ${err.message}`)
   }
 }
