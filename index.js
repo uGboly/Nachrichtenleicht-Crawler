@@ -1,8 +1,6 @@
 import { PlaywrightCrawler } from 'crawlee'
 import { router } from './routes.js'
 
-// PlaywrightCrawler crawls the web using a headless
-// browser controlled by the Playwright library.
 const crawler = new PlaywrightCrawler({
   requestHandler: router,
   maxRequestRetries: 1,
