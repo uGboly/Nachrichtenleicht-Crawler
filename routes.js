@@ -3,9 +3,11 @@ import { createPlaywrightRouter, Dataset } from 'crawlee'
 export const router = createPlaywrightRouter()
 
 router.addHandler('news', async ({ request, page, log }) => {
-  const title = await page
-    .locator('h1.b-article-header-main span.headline-title')
-    .textContent()
+  const title = (
+    await page
+      .locator('h1.b-article-header-main span.headline-title')
+      .textContent()
+  ).trim()
 
   const description = await page
     .locator('p.article-header-description')
@@ -18,6 +20,12 @@ router.addHandler('news', async ({ request, page, log }) => {
   ).join('\n')
 
   const fullText = [title, description, detail].join('\n')
+
+  const audioScript = fullText
+    .match(/[^.!?,:,]+[.!?,:]+/g)
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join('\n')
 
   const audioUrl = await page
     .locator('a[alt="Audio herunterladen"]')
@@ -47,6 +55,7 @@ router.addHandler('news', async ({ request, page, log }) => {
     detail,
     wordsBook,
     fullText,
+    audioScript,
     audioUrl
   }
   await Dataset.pushData(result)
